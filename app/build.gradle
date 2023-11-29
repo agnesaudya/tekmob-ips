@@ -67,7 +67,7 @@ dependencies {
     androidTestImplementation 'androidx.compose.ui:ui-test-junit4'
     debugImplementation 'androidx.compose.ui:ui-tooling'
     debugImplementation 'androidx.compose.ui:ui-test-manifest'
-
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
     implementation 'androidx.room:room-ktx:2.4.3'
     kapt 'androidx.room:room-compiler:2.4.3'
     implementation 'androidx.room:room-paging:2.4.0-rc01'

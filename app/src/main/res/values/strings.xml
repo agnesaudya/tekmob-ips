@@ -4,7 +4,7 @@
     <string name="row">Row</string>
     <string name="col">Col</string>
     <string name="label">Label</string>
-    <string name="submit">Submit\n</string>
+    <string name="submit">Submit</string>
     <string name="rssi">RSSI</string>
     <string name="download">Download</string>
 </resources>
