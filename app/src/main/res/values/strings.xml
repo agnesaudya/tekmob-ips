@@ -7,4 +7,5 @@
     <string name="submit">Submit</string>
     <string name="rssi">RSSI</string>
     <string name="download">Download</string>
+    <string name="input">Scan Global BSSID</string>
 </resources>

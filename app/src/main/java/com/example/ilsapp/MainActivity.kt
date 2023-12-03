@@ -47,7 +47,9 @@ import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.room.Room
+import com.example.ilsapp.database.BssidDatabase
 import com.example.ilsapp.database.FingerprintDatabase
+import com.example.ilsapp.entity.BSSID
 import com.example.ilsapp.entity.Fingerprint
 import com.example.ilsapp.ui.theme.IlsAppTheme
 import com.google.gson.Gson
@@ -71,9 +73,15 @@ class MainActivity : ComponentActivity() {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 2)
         }
 
-        val db = Room.databaseBuilder(
+        val finger_db = Room.databaseBuilder(
             applicationContext,
             FingerprintDatabase::class.java, "fingerprint"
+
+        ).build()
+
+        val bssid_db = Room.databaseBuilder(
+            applicationContext,
+            BssidDatabase::class.java, "bssid"
 
         ).build()
         setContent {
@@ -83,34 +91,13 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    InputScreen(db)
+                    InputScreen(finger_db, bssid_db)
                 }
             }
         }
     }
 }
 
-//@RequiresApi(Build.VERSION_CODES.TIRAMISU)
-//@Composable
-//fun Greeting(name: String, modifier: Modifier = Modifier) {
-//    val context = LocalContext.current
-//
-//    val wifiManager = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
-//    val wifiInfo: WifiInfo? = wifiManager.connectionInfo
-//    var scanResults: List<ScanResult> = emptyList()
-//    if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
-//        == PackageManager.PERMISSION_GRANTED) {
-//        scanResults = wifiManager.scanResults
-//    }
-//    Column {
-//        Text("Connected Wi-Fi: ${wifiInfo?.ssid} (RSSI: ${wifiInfo?.rssi})")
-//        Text("Available Wi-Fi Networks:")
-//        scanResults.forEach { scanResult ->
-//            Text("SSID: ${scanResult.wifiSsid}, RSSI: ${scanResult.level}")
-//        }
-//    }
-//
-//}
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -162,11 +149,10 @@ fun InputLayout(modifier: Modifier, label:String, row:String, col:String, onLabe
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
-fun InputScreen(db: FingerprintDatabase){
+fun InputScreen(finger_db: FingerprintDatabase, bssid_db: BssidDatabase){
     var label by remember { mutableStateOf("") }
     var row by remember { mutableStateOf("") }
     var col by remember { mutableStateOf("") }
-    var rssi by remember { mutableStateOf(0) }
     val context = LocalContext.current
     Column(
         modifier = Modifier.verticalScroll(rememberScrollState()),
@@ -191,7 +177,7 @@ fun InputScreen(db: FingerprintDatabase){
 
             Button(
                 modifier = Modifier.fillMaxWidth(),
-                onClick = { performDatabaseAction(row, col,db, context, onRssiChange = { rssi=it }) }
+                onClick = { performDatabaseAction(row, col,finger_db,bssid_db, context) }
             ) {
                 Text(
                     text = stringResource(R.string.submit),
@@ -200,22 +186,85 @@ fun InputScreen(db: FingerprintDatabase){
             }
             Button(
                 modifier = Modifier.fillMaxWidth(),
-                onClick = { exportDataToJson(context=context, db = db) }
+                onClick = { exportDataToJson(context=context, db = finger_db) }
             ) {
                 Text(
                     text = stringResource(R.string.download),
                     fontSize = 16.sp
                 )
             }
+
+            Button(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = { performGlobalScan(context=context, db = bssid_db) }
+            ) {
+                Text(
+                    text = stringResource(R.string.input),
+                    fontSize = 16.sp
+                )
+            }
         }
-        RSSIScore(score = rssi, modifier = Modifier.padding(20.dp))
+
     }
 }
 
 
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-fun performDatabaseAction(row: String, col: String, db: FingerprintDatabase, context: Context, onRssiChange : (Int) -> Unit) {
+fun performDatabaseAction(row: String, col: String, finger_db: FingerprintDatabase, bssid_db:BssidDatabase, context: Context, ) {
+
+    GlobalScope.launch(Dispatchers.IO) {
+        val wifiManager = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
+        if (ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+
+            val scanResults: List<ScanResult> = wifiManager.scanResults
+            val filteredResults = scanResults.filter { scanResult ->
+                scanResult.wifiSsid.toString() == "\"eduroam\"" || scanResult.wifiSsid.toString()
+                    .contains("\"HotSpot - UI\"")
+            }
+
+            filteredResults.forEach { filteredResult -> run {
+                var fingerprint = Fingerprint()
+                val existingBSSID = bssid_db.bssidDao().findByBSSID(filteredResult.BSSID)
+                if(existingBSSID!=null){
+                    when (existingBSSID.name) {
+                        "bssid1" -> fingerprint.bssid1_rssi = filteredResult.level
+                        "bssid2" -> fingerprint.bssid2_rssi = filteredResult.level
+                        "bssid3" -> fingerprint.bssid3_rssi = filteredResult.level
+                        "bssid4" -> fingerprint.bssid4_rssi = filteredResult.level
+                        "bssid5" -> fingerprint.bssid5_rssi = filteredResult.level
+                        "bssid6" -> fingerprint.bssid6_rssi = filteredResult.level
+                        else -> {
+                            print("BSSID Not existing")
+                        }
+                    }
+                    fingerprint.label="R${row}C${col}"
+//                    finger_db.fingerprintDao().insert(Fingerprint())
+                }
+
+            } }
+
+//            db.fingerprintDao().insert(Fingerprint()
+//      scanResult.level insert to db -> knn
+            // Extract BSSIDs from ScanResults and print them
+
+        } else {
+
+            // Request ACCESS_FINE_LOCATION permission if not granted
+
+        }
+    }
+
+
+
+}
+
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+fun performGlobalScan(db: BssidDatabase, context: Context, ) {
 
     GlobalScope.launch(Dispatchers.IO) {
         val wifiManager = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
@@ -230,80 +279,38 @@ fun performDatabaseAction(row: String, col: String, db: FingerprintDatabase, con
                 scanResult.wifiSsid.toString() == "\"eduroam\"" || scanResult.wifiSsid.toString()
                     .contains("\"HotSpot - UI\"")
             }
-            val sortedResult = filteredResult.sortedByDescending { scanResult -> scanResult.level }
+            val sortedResults = filteredResult.sortedByDescending { scanResult -> scanResult.level }
 
-            db.fingerprintDao().insert(Fingerprint(uid=0, label = "R"+row+"C"+col, rssi1 = sortedResult[0].level,  rssi2= sortedResult[1].level,  rssi3= sortedResult[2].level, rssi4 = sortedResult[3].level, rssi5 =  sortedResult[4].level, rssi6 = sortedResult[5].level))
-//      scanResult.level insert to db -> knn
-            // Extract BSSIDs from ScanResults and print them
-            println("helo")
+            sortedResults.forEach {
+
+                    sortedResult ->
+                run {
+                    val existingBSSID = db.bssidDao().findByBSSID(sortedResult.BSSID)
+                    val counter = db.bssidDao().countTotal()
+                    if(existingBSSID!=null){
+
+                        db.bssidDao().insert(
+                            BSSID(
+                                uid = 0,
+                                bssid = sortedResult.BSSID,
+                                ssid = sortedResult.wifiSsid.toString(),
+                                name = "bssid${counter+1}"
+                            )
+                        )
+
+                    }
+                }
+            }
         } else {
-            println("helo")
+
             // Request ACCESS_FINE_LOCATION permission if not granted
 
         }
     }
 
-//    var scanResults: List<ScanResult>
-//    if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
-//        == PackageManager.PERMISSION_GRANTED
-//    ) {
-//        val wifiManager = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
-//
-//    }
-//        scanResults = wifiManager.scanResults
-//
-//        scanResults.forEach { scanResult ->
-//            if (ContextCompat.checkSelfPermission(
-//                    context,
-//                    Manifest.permission.ACCESS_FINE_LOCATION
-//                ) == PackageManager.PERMISSION_GRANTED
-//            ) {
-//                val info = wifiManager.connectionInfo
-//                val ssid = info.ssid
-//                val bssid = info.bssid
-//
-//                println(ssid)
-//                println(bssid)
-//            }
-
-
-//            GlobalScope.launch(Dispatchers.IO) {
-//
-////                val wifiInfo: WifiInfo? = wifiManager.connectionInfo
-//                if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-//                    val info = wifiManager.connectionInfo
-//                    val ssid = info.ssid
-//                    val bssid = info.bssid
-//
-//                    println(ssid)
-//                    println(bssid)
-////                    println(scanResult.BSSID)
-////                    println(scanResult.wifiSsid)
-////                    println(scanResult.level)
-//
-////                    val existingRecord = db.fingerprintDao().findByLabel(bssid = scanResult.wifiSsid.toString())
-////                    if (existingRecord != null) {
-////                        val arrayList = existingRecord.rssi
-////
-////                        arrayList.add(scanResult.level)
-////                        existingRecord.rssi = arrayList
-////                        db.fingerprintDao().update(existingRecord)
-////                    } else {
-////                        val arrayList = ArrayList<Int>()
-////                        arrayList.add(scanResult.level)
-////
-////                        db.fingerprintDao().insert(Fingerprint(scanResult.wifiSsid.toString(), row.toInt(), col.toInt(), arrayList))
-////                    }
-//                }
-//
-//            }
-//
-
-
 
 
 }
-
 
 
 fun exportDataToJson(context: Context, db: FingerprintDatabase) {
@@ -334,16 +341,5 @@ fun exportDataToJson(context: Context, db: FingerprintDatabase) {
 }
 
 
-@Composable
-fun RSSIScore(score: Int, modifier: Modifier = Modifier) {
-    Card(
-        modifier = modifier
-    ) {
-        Text(
-            text = stringResource(R.string.rssi, score),
-            style = typography.headlineMedium,
-            modifier = Modifier.padding(8.dp)
-        )
-    }
-}
+
 
