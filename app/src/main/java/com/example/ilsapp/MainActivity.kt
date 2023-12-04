@@ -53,11 +53,15 @@ import com.example.ilsapp.entity.BSSID
 import com.example.ilsapp.entity.Fingerprint
 import com.example.ilsapp.ui.theme.IlsAppTheme
 import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
 import java.io.FileWriter
+import java.io.IOException
 
 
 class MainActivity : ComponentActivity() {
@@ -79,11 +83,7 @@ class MainActivity : ComponentActivity() {
 
         ).build()
 
-        val bssid_db = Room.databaseBuilder(
-            applicationContext,
-            BssidDatabase::class.java, "bssid"
-
-        ).build()
+        val bssid_db = BssidDatabase.getInstance(this.applicationContext)
         setContent {
             IlsAppTheme {
                 // A surface container using the 'background' color from the theme
@@ -194,15 +194,25 @@ fun InputScreen(finger_db: FingerprintDatabase, bssid_db: BssidDatabase){
                 )
             }
 
-            Button(
-                modifier = Modifier.fillMaxWidth(),
-                onClick = { performGlobalScan(context=context, db = bssid_db) }
-            ) {
-                Text(
-                    text = stringResource(R.string.input),
-                    fontSize = 16.sp
-                )
-            }
+//            Button(
+//                modifier = Modifier.fillMaxWidth(),
+//                onClick = { performGlobalScan(context=context, db = bssid_db) }
+//            ) {
+//                Text(
+//                    text = stringResource(R.string.input),
+//                    fontSize = 16.sp
+//                )
+//            }
+
+//            Button(
+//                modifier = Modifier.fillMaxWidth(),
+//                onClick = { DumpBssidDataToJson(context=context, db = bssid_db) }
+//            ) {
+//                Text(
+//                    text = stringResource(R.string.dump),
+//                    fontSize = 16.sp
+//                )
+//            }
         }
 
     }
@@ -263,54 +273,59 @@ fun performDatabaseAction(row: String, col: String, finger_db: FingerprintDataba
 
 }
 
-@RequiresApi(Build.VERSION_CODES.TIRAMISU)
-fun performGlobalScan(db: BssidDatabase, context: Context, ) {
+//@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+//fun performGlobalScan(db: BssidDatabase, context: Context ) {
+//
+//    GlobalScope.launch(Dispatchers.IO) {
+//        val wifiManager = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
+//        if (ContextCompat.checkSelfPermission(
+//                context,
+//                Manifest.permission.ACCESS_FINE_LOCATION
+//            ) == PackageManager.PERMISSION_GRANTED
+//        ) {
+//
+//            val scanResults: List<ScanResult> = wifiManager.scanResults
+//            val filteredResult = scanResults.filter { scanResult ->
+//                scanResult.wifiSsid.toString() == "\"eduroam\"" || scanResult.wifiSsid.toString()
+//                    .contains("\"HotSpot - UI\"")
+//            }
+//            val sortedResults = filteredResult.sortedByDescending { scanResult -> scanResult.level }
+//
+//            sortedResults.forEach {
+//
+//                    sortedResult ->
+//                run {
+//                    val existingBSSID = db.bssidDao().findByBSSID(sortedResult.BSSID)
+//                    val counter = db.bssidDao().countTotal()
+//                    println("test")
+//                    if(existingBSSID==null){
+//
+//                        db.bssidDao().insert(
+//                            BSSID(
+//                                uid = 0,
+//                                bssid = sortedResult.BSSID,
+//                                ssid = sortedResult.wifiSsid.toString(),
+//                                name = "bssid${counter+1}"
+//                            )
+//                        )
+//
+//                    }
+//                }
+//
+//                print("hello")
+//            }
+//        } else {
+//
+//            // Request ACCESS_FINE_LOCATION permission if not granted
+//
+//        }
+//    }
+//
+//
+//
+//}
 
-    GlobalScope.launch(Dispatchers.IO) {
-        val wifiManager = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
-        if (ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
 
-            val scanResults: List<ScanResult> = wifiManager.scanResults
-            val filteredResult = scanResults.filter { scanResult ->
-                scanResult.wifiSsid.toString() == "\"eduroam\"" || scanResult.wifiSsid.toString()
-                    .contains("\"HotSpot - UI\"")
-            }
-            val sortedResults = filteredResult.sortedByDescending { scanResult -> scanResult.level }
-
-            sortedResults.forEach {
-
-                    sortedResult ->
-                run {
-                    val existingBSSID = db.bssidDao().findByBSSID(sortedResult.BSSID)
-                    val counter = db.bssidDao().countTotal()
-                    if(existingBSSID!=null){
-
-                        db.bssidDao().insert(
-                            BSSID(
-                                uid = 0,
-                                bssid = sortedResult.BSSID,
-                                ssid = sortedResult.wifiSsid.toString(),
-                                name = "bssid${counter+1}"
-                            )
-                        )
-
-                    }
-                }
-            }
-        } else {
-
-            // Request ACCESS_FINE_LOCATION permission if not granted
-
-        }
-    }
-
-
-
-}
 
 
 fun exportDataToJson(context: Context, db: FingerprintDatabase) {
@@ -339,6 +354,35 @@ fun exportDataToJson(context: Context, db: FingerprintDatabase) {
         }
     }
 }
+
+
+//fun DumpBssidDataToJson(db: BssidDatabase, context: Context) {
+//    GlobalScope.launch(Dispatchers.IO) {
+//        val dao = db.bssidDao()
+//        val data = dao.getAll()
+//
+//        val gson = Gson()
+//        val json = gson.toJson(data)
+//
+//        val filename = "bssid.json"
+//        val downloadsFolder =
+//            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+//
+//        val file = File(downloadsFolder, filename)
+//
+//        try {
+//            FileOutputStream(file).use {
+//                it.write(json.toByteArray())
+//            }
+//        } catch (e: IOException) {
+//            e.printStackTrace()
+//        }
+//    }
+
+
+
+
+
 
 
 

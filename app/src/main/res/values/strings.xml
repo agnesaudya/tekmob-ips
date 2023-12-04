@@ -8,4 +8,5 @@
     <string name="rssi">RSSI</string>
     <string name="download">Download</string>
     <string name="input">Scan Global BSSID</string>
+    <string name="dump">Dump BSSID to Json</string>
 </resources>

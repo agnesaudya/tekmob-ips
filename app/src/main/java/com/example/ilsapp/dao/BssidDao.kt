@@ -14,6 +14,8 @@ interface BssidDao {
     @Query("SELECT * FROM bssid")
     fun getAll(): List<BSSID>
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertAll(bssids: List<BSSID>)
     @Query("SELECT * FROM bssid WHERE bssid == :bssid")
     fun findByBSSID(bssid: String): BSSID
 

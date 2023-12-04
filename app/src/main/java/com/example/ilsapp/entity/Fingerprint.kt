@@ -7,7 +7,7 @@ import androidx.room.PrimaryKey
 
 @Entity
 data class Fingerprint(
-    @PrimaryKey(autoGenerate = true) val uid: Int,
+    @PrimaryKey(autoGenerate = true) var uid: Int,
 
     @ColumnInfo(name = "label") var label: String,
 
