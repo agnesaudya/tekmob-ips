@@ -248,12 +248,21 @@ fun performDatabaseAction(row: String, col: String, finger_db: FingerprintDataba
                         "bssid4" -> fingerprint.bssid4_rssi = filteredResult.level
                         "bssid5" -> fingerprint.bssid5_rssi = filteredResult.level
                         "bssid6" -> fingerprint.bssid6_rssi = filteredResult.level
+                        "bssid7" -> fingerprint.bssid7_rssi = filteredResult.level
+                        "bssid8" -> fingerprint.bssid8_rssi = filteredResult.level
+                        "bssid9" -> fingerprint.bssid9_rssi = filteredResult.level
+                        "bssid10" -> fingerprint.bssid10_rssi = filteredResult.level
+                        "bssid11" -> fingerprint.bssid11_rssi = filteredResult.level
+                        "bssid12" -> fingerprint.bssid12_rssi = filteredResult.level
+                        "bssid13" -> fingerprint.bssid13_rssi = filteredResult.level
+                        "bssid14" -> fingerprint.bssid14_rssi = filteredResult.level
+
                         else -> {
                             print("BSSID Not existing")
                         }
                     }
                     fingerprint.label="R${row}C${col}"
-//                    finger_db.fingerprintDao().insert(Fingerprint())
+                    finger_db.fingerprintDao().insert(Fingerprint())
                 }
 
             } }
