@@ -260,7 +260,7 @@ fun performDatabaseAction(row: String, col: String, finger_db: FingerprintDataba
 
 //            db.fingerprintDao().insert(Fingerprint()
 //      scanResult.level insert to db -> knn
-            // Extract BSSIDs from ScanResults and print them
+            // Ext  ract BSSIDs from ScanResults and print them
 
         } else {
 
@@ -378,6 +378,8 @@ fun exportDataToJson(context: Context, db: FingerprintDatabase) {
 //            e.printStackTrace()
 //        }
 //    }
+
+
 
 
 
