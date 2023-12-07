@@ -1,4 +1,4 @@
-package com.example.ilsapp.ui.theme
+package com.example.ipsapp.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

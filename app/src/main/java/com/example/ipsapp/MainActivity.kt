@@ -1,4 +1,4 @@
-package com.example.ilsapp
+package com.example.ipsapp
 
 import android.Manifest
 import android.content.Context
@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
@@ -47,21 +46,18 @@ import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.room.Room
-import com.example.ilsapp.database.BssidDatabase
-import com.example.ilsapp.database.FingerprintDatabase
-import com.example.ilsapp.entity.BSSID
-import com.example.ilsapp.entity.Fingerprint
-import com.example.ilsapp.ui.theme.IlsAppTheme
+import com.example.ilsapp.R
+
+import com.example.ipsapp.database.BssidDatabase
+import com.example.ipsapp.database.FingerprintDatabase
+import com.example.ipsapp.entity.Fingerprint
+import com.example.ipsapp.ui.theme.IpsAppTheme
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
 import java.io.FileWriter
-import java.io.IOException
 
 
 class MainActivity : ComponentActivity() {
@@ -85,7 +81,7 @@ class MainActivity : ComponentActivity() {
 
         val bssid_db = BssidDatabase.getInstance(this.applicationContext)
         setContent {
-            IlsAppTheme {
+            IpsAppTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
@@ -102,7 +98,7 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun InputLayout(modifier: Modifier, label:String, row:String, col:String, onLabelChange: (String) -> Unit,
+fun InputLayout(modifier: Modifier,  row:String, col:String,
                 onRowChange: (String) -> Unit,
                 onColChange: (String) -> Unit) {
 
@@ -120,12 +116,7 @@ fun InputLayout(modifier: Modifier, label:String, row:String, col:String, onLabe
                 style = typography.titleMedium,
                 color = colorScheme.inversePrimary
             )
-            OutlinedTextField(
-                value = label,
-                modifier = Modifier.fillMaxWidth(),
-                onValueChange = onLabelChange,
-                label = { Text(stringResource(R.string.label)) }
-            )
+
             OutlinedTextField(
                 value = col,
                 singleLine = true,
@@ -150,7 +141,6 @@ fun InputLayout(modifier: Modifier, label:String, row:String, col:String, onLabe
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun InputScreen(finger_db: FingerprintDatabase, bssid_db: BssidDatabase){
-    var label by remember { mutableStateOf("") }
     var row by remember { mutableStateOf("") }
     var col by remember { mutableStateOf("") }
     val context = LocalContext.current
@@ -163,8 +153,6 @@ fun InputScreen(finger_db: FingerprintDatabase, bssid_db: BssidDatabase){
             modifier = Modifier
                 .fillMaxWidth()
                 .wrapContentHeight(),
-            onLabelChange = { label = it },
-            label = label,
             onRowChange = { row = it },
             row = row,
             onColChange = { col = it },
@@ -262,7 +250,7 @@ fun performDatabaseAction(row: String, col: String, finger_db: FingerprintDataba
                         }
                     }
                     fingerprint.label="R${row}C${col}"
-                    finger_db.fingerprintDao().insert(Fingerprint())
+                    finger_db.fingerprintDao().insert(fingerprint)
                 }
 
             } }

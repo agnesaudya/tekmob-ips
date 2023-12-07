@@ -1,4 +1,4 @@
-package com.example.ilsapp.utils
+package com.example.ipsapp.utils
 
 import androidx.room.TypeConverter
 import com.google.gson.Gson

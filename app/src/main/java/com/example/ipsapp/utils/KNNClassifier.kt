@@ -1,7 +1,7 @@
-package com.example.ilsapp.utils
+package com.example.ipsapp.utils
 
 
-import com.example.ilsapp.entity.Fingerprint
+import com.example.ipsapp.entity.Fingerprint
 
 import kotlin.math.pow
 import kotlin.math.sqrt

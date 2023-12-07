@@ -1,4 +1,4 @@
-package com.example.ilsapp.database
+package com.example.ipsapp.database
 
 import android.content.Context
 import androidx.room.Database
@@ -6,12 +6,9 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.example.ilsapp.dao.BssidDao
-import com.example.ilsapp.dao.FingerprintDao
-import com.example.ilsapp.entity.BSSID
-import com.example.ilsapp.entity.Fingerprint
-import com.example.ilsapp.utils.BSSIDTypeConverter
-import com.example.ilsapp.utils.Converters
+import com.example.ipsapp.dao.BssidDao
+import com.example.ipsapp.entity.BSSID
+import com.example.ipsapp.utils.BSSIDTypeConverter
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.CoroutineScope

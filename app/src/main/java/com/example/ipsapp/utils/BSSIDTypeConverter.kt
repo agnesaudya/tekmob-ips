@@ -1,7 +1,7 @@
-package com.example.ilsapp.utils
+package com.example.ipsapp.utils
 
 import androidx.room.TypeConverter
-import com.example.ilsapp.entity.BSSID
+import com.example.ipsapp.entity.BSSID
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 

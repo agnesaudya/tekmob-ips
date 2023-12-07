@@ -1,4 +1,4 @@
-package com.example.ilsapp
+package com.example.ipsapp
 
 import org.junit.Test
 

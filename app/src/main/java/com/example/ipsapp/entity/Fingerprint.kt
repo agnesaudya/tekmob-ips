@@ -1,4 +1,4 @@
-package com.example.ilsapp.entity
+package com.example.ipsapp.entity
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
