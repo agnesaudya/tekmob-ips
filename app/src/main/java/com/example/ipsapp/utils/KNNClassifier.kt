@@ -17,7 +17,7 @@ class KNNClassifier {
 
 
      fun classify(
-        query: List<Int>,
+        query: List<Double>,
         k: Int
     ): String {
         for (i in data){
@@ -42,7 +42,7 @@ class KNNClassifier {
 
     }
 
-    private fun euclideanDistance(a: Fingerprint, b: List<Int>): Double {
+    private fun euclideanDistance(a: Fingerprint, b: List<Double>): Double {
         val list = listOf(
             a.bssid1_rssi,
             a.bssid2_rssi,
@@ -60,7 +60,7 @@ class KNNClassifier {
             a.bssid14_rssi)
         var sum = 0.0
         for (i in list.indices) {
-            sum += (list[i] - b[i]).toDouble().pow(2.0)
+            sum += (list[i] - b[i]).pow(2.0)
         }
         return sqrt(sum)
     }

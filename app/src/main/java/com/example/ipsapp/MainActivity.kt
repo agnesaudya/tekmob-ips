@@ -12,28 +12,41 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.shapes
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -50,14 +63,17 @@ import com.example.ilsapp.R
 
 import com.example.ipsapp.database.BssidDatabase
 import com.example.ipsapp.database.FingerprintDatabase
+import com.example.ipsapp.entity.BSSID
 import com.example.ipsapp.entity.Fingerprint
 import com.example.ipsapp.ui.theme.IpsAppTheme
 import com.google.gson.Gson
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileWriter
+import kotlin.math.pow
 
 
 class MainActivity : ComponentActivity() {
@@ -143,12 +159,23 @@ fun InputLayout(modifier: Modifier,  row:String, col:String,
 fun InputScreen(finger_db: FingerprintDatabase, bssid_db: BssidDatabase){
     var row by remember { mutableStateOf("") }
     var col by remember { mutableStateOf("") }
+    val snackState = remember { SnackbarHostState()}
+    val scope = rememberCoroutineScope()
+
+    fun launchSnackbar(message: String, actionLabel : String?=null, duration: SnackbarDuration = SnackbarDuration.Short){
+        scope.launch {
+            snackState.showSnackbar(message = message,actionLabel=actionLabel, duration=duration)
+        }
+    }
+
+
     val context = LocalContext.current
     Column(
         modifier = Modifier.verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+
         InputLayout(
             modifier = Modifier
                 .fillMaxWidth()
@@ -165,10 +192,30 @@ fun InputScreen(finger_db: FingerprintDatabase, bssid_db: BssidDatabase){
 
             Button(
                 modifier = Modifier.fillMaxWidth(),
-                onClick = { performDatabaseAction(row, col,finger_db,bssid_db, context) }
+                onClick = {
+                    performDatabaseAction(row, col, finger_db, bssid_db, context) { isSuccess ->
+                        if (isSuccess) {
+                            // Show Snackbar or perform other actions for success
+                            launchSnackbar(message = "Success adding data", actionLabel = "Hide", duration = SnackbarDuration.Indefinite)
+                        } else {
+                            // Show Snackbar or perform other actions for failure
+                            launchSnackbar(message = "Failed adding data", actionLabel = "Hide", duration = SnackbarDuration.Indefinite)
+                        }
+                    }
+                }
             ) {
                 Text(
                     text = stringResource(R.string.submit),
+                    fontSize = 15.sp
+                )
+            }
+            Button(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = {
+                    launchSnackbar(message = "Hi i am snackbar", actionLabel = "Hide", duration = SnackbarDuration.Indefinite)}
+            ) {
+                Text(
+                    text = "notif",
                     fontSize = 15.sp
                 )
             }
@@ -182,15 +229,22 @@ fun InputScreen(finger_db: FingerprintDatabase, bssid_db: BssidDatabase){
                 )
             }
 
-//            Button(
-//                modifier = Modifier.fillMaxWidth(),
-//                onClick = { performGlobalScan(context=context, db = bssid_db) }
-//            ) {
-//                Text(
-//                    text = stringResource(R.string.input),
-//                    fontSize = 16.sp
-//                )
-//            }
+            Box(modifier = Modifier.fillMaxSize(), Alignment.BottomCenter){
+                SnackbarHost(hostState = snackState)
+            }
+
+
+
+
+            Button(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = { performGlobalScan(context=context, db = bssid_db) }
+            ) {
+                Text(
+                    text = stringResource(R.string.input),
+                    fontSize = 16.sp
+                )
+            }
 
 //            Button(
 //                modifier = Modifier.fillMaxWidth(),
@@ -204,12 +258,100 @@ fun InputScreen(finger_db: FingerprintDatabase, bssid_db: BssidDatabase){
         }
 
     }
+
+
 }
 
 
 
+    @OptIn(DelicateCoroutinesApi::class)
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    fun performDatabaseAction(
+        row: String,
+        col: String,
+        finger_db: FingerprintDatabase,
+        bssid_db: BssidDatabase,
+        context: Context,
+        callback: (Boolean) -> Unit
+    ) {
+
+        GlobalScope.launch(Dispatchers.IO) {
+            try {
+                println(row)
+                println(col)
+                val wifiManager = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
+                if (ContextCompat.checkSelfPermission(
+                        context,
+                        Manifest.permission.ACCESS_FINE_LOCATION
+                    ) == PackageManager.PERMISSION_GRANTED
+                ) {
+                    val scanResults: List<ScanResult> = wifiManager.scanResults
+                    val filteredResults = scanResults.filter { scanResult ->
+                        scanResult.wifiSsid.toString() == "\"eduroam\"" || scanResult.wifiSsid.toString()
+                            .contains("\"HotSpot - UI\"")
+                    }
+
+
+                    filteredResults.forEach { filteredResult ->
+                        var fingerprint = Fingerprint()
+//                        println("HEI")
+
+                        val existingBSSID = bssid_db.bssidDao().findByBSSID(filteredResult.BSSID)
+
+                        println(filteredResult.BSSID)
+                        if (existingBSSID != null) {
+                            println(existingBSSID.name)
+                            println(filteredResult.level)
+                            println(convertDbToDbWatt(filteredResult.level))
+//                            println("XXXXXXXXXX")
+
+                            when (existingBSSID.name) {
+                                "bssid1" -> fingerprint.bssid1_rssi = convertDbToDbWatt(filteredResult.level)
+                                "bssid2" -> fingerprint.bssid2_rssi = convertDbToDbWatt(filteredResult.level)
+                            "bssid3" -> fingerprint.bssid3_rssi = convertDbToDbWatt(filteredResult.level)
+                            "bssid4" -> fingerprint.bssid4_rssi = convertDbToDbWatt(filteredResult.level)
+                            "bssid5" -> fingerprint.bssid5_rssi = convertDbToDbWatt(filteredResult.level)
+                            "bssid6" -> fingerprint.bssid6_rssi = convertDbToDbWatt(filteredResult.level)
+                            "bssid7" -> fingerprint.bssid7_rssi = convertDbToDbWatt(filteredResult.level)
+                            "bssid8" -> fingerprint.bssid8_rssi = convertDbToDbWatt(filteredResult.level)
+                            "bssid9" -> fingerprint.bssid9_rssi = convertDbToDbWatt(filteredResult.level)
+                            "bssid10" -> fingerprint.bssid10_rssi = convertDbToDbWatt(filteredResult.level)
+                            "bssid11" -> fingerprint.bssid11_rssi = convertDbToDbWatt(filteredResult.level)
+                            "bssid12" -> fingerprint.bssid12_rssi = convertDbToDbWatt(filteredResult.level)
+                            "bssid13" -> fingerprint.bssid13_rssi = convertDbToDbWatt(filteredResult.level)
+                            "bssid14" -> fingerprint.bssid14_rssi = convertDbToDbWatt(filteredResult.level)
+
+                            else -> {
+                                print("BSSID Not existing")
+                            }
+                        }
+                            fingerprint.label = "R${row}C${col}"
+
+
+                                finger_db.fingerprintDao().insert(fingerprint)
+                            callback.invoke(true) // Success
+
+                        }else{
+                            println("GAK nemu bssid HEU")
+
+                            callback.invoke(false)
+                        }
+                    }
+                }
+                // If no success, invoke the callback with false
+                callback.invoke(false)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                // If an exception occurs, invoke the callback with false
+                callback.invoke(false)
+            }
+        }
+
+
+    }
+
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-fun performDatabaseAction(row: String, col: String, finger_db: FingerprintDatabase, bssid_db:BssidDatabase, context: Context, ) {
+fun performGlobalScan(db: BssidDatabase, context: Context ) {
 
     GlobalScope.launch(Dispatchers.IO) {
         val wifiManager = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
@@ -220,45 +362,35 @@ fun performDatabaseAction(row: String, col: String, finger_db: FingerprintDataba
         ) {
 
             val scanResults: List<ScanResult> = wifiManager.scanResults
-            val filteredResults = scanResults.filter { scanResult ->
+            val filteredResult = scanResults.filter { scanResult ->
                 scanResult.wifiSsid.toString() == "\"eduroam\"" || scanResult.wifiSsid.toString()
                     .contains("\"HotSpot - UI\"")
             }
+            val sortedResults = filteredResult.sortedByDescending { scanResult -> scanResult.level }
 
-            filteredResults.forEach { filteredResult -> run {
-                var fingerprint = Fingerprint()
-                val existingBSSID = bssid_db.bssidDao().findByBSSID(filteredResult.BSSID)
-                if(existingBSSID!=null){
-                    when (existingBSSID.name) {
-                        "bssid1" -> fingerprint.bssid1_rssi = filteredResult.level
-                        "bssid2" -> fingerprint.bssid2_rssi = filteredResult.level
-                        "bssid3" -> fingerprint.bssid3_rssi = filteredResult.level
-                        "bssid4" -> fingerprint.bssid4_rssi = filteredResult.level
-                        "bssid5" -> fingerprint.bssid5_rssi = filteredResult.level
-                        "bssid6" -> fingerprint.bssid6_rssi = filteredResult.level
-                        "bssid7" -> fingerprint.bssid7_rssi = filteredResult.level
-                        "bssid8" -> fingerprint.bssid8_rssi = filteredResult.level
-                        "bssid9" -> fingerprint.bssid9_rssi = filteredResult.level
-                        "bssid10" -> fingerprint.bssid10_rssi = filteredResult.level
-                        "bssid11" -> fingerprint.bssid11_rssi = filteredResult.level
-                        "bssid12" -> fingerprint.bssid12_rssi = filteredResult.level
-                        "bssid13" -> fingerprint.bssid13_rssi = filteredResult.level
-                        "bssid14" -> fingerprint.bssid14_rssi = filteredResult.level
+            sortedResults.forEach {
 
-                        else -> {
-                            print("BSSID Not existing")
-                        }
+                    sortedResult ->
+                run {
+                    val existingBSSID = db.bssidDao().findByBSSID(sortedResult.BSSID)
+                    val counter = db.bssidDao().countTotal()
+                    println("test")
+                    if(existingBSSID==null){
+
+                        db.bssidDao().insert(
+                            BSSID(
+                                uid = 0,
+                                bssid = sortedResult.BSSID,
+                                ssid = sortedResult.wifiSsid.toString(),
+                                name = "bssid${counter+1}"
+                            )
+                        )
+
                     }
-                    fingerprint.label="R${row}C${col}"
-                    finger_db.fingerprintDao().insert(fingerprint)
                 }
 
-            } }
-
-//            db.fingerprintDao().insert(Fingerprint()
-//      scanResult.level insert to db -> knn
-            // Ext  ract BSSIDs from ScanResults and print them
-
+                print("hello")
+            }
         } else {
 
             // Request ACCESS_FINE_LOCATION permission if not granted
@@ -269,58 +401,6 @@ fun performDatabaseAction(row: String, col: String, finger_db: FingerprintDataba
 
 
 }
-
-//@RequiresApi(Build.VERSION_CODES.TIRAMISU)
-//fun performGlobalScan(db: BssidDatabase, context: Context ) {
-//
-//    GlobalScope.launch(Dispatchers.IO) {
-//        val wifiManager = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
-//        if (ContextCompat.checkSelfPermission(
-//                context,
-//                Manifest.permission.ACCESS_FINE_LOCATION
-//            ) == PackageManager.PERMISSION_GRANTED
-//        ) {
-//
-//            val scanResults: List<ScanResult> = wifiManager.scanResults
-//            val filteredResult = scanResults.filter { scanResult ->
-//                scanResult.wifiSsid.toString() == "\"eduroam\"" || scanResult.wifiSsid.toString()
-//                    .contains("\"HotSpot - UI\"")
-//            }
-//            val sortedResults = filteredResult.sortedByDescending { scanResult -> scanResult.level }
-//
-//            sortedResults.forEach {
-//
-//                    sortedResult ->
-//                run {
-//                    val existingBSSID = db.bssidDao().findByBSSID(sortedResult.BSSID)
-//                    val counter = db.bssidDao().countTotal()
-//                    println("test")
-//                    if(existingBSSID==null){
-//
-//                        db.bssidDao().insert(
-//                            BSSID(
-//                                uid = 0,
-//                                bssid = sortedResult.BSSID,
-//                                ssid = sortedResult.wifiSsid.toString(),
-//                                name = "bssid${counter+1}"
-//                            )
-//                        )
-//
-//                    }
-//                }
-//
-//                print("hello")
-//            }
-//        } else {
-//
-//            // Request ACCESS_FINE_LOCATION permission if not granted
-//
-//        }
-//    }
-//
-//
-//
-//}
 
 
 
@@ -379,7 +459,9 @@ fun exportDataToJson(context: Context, db: FingerprintDatabase) {
 
 
 
-
+fun convertDbToDbWatt(dBm: Int): Double {
+    return 10.0.pow(dBm / 10.0)
+}
 
 
 
