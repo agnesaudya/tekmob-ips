@@ -211,16 +211,6 @@ fun InputScreen(finger_db: FingerprintDatabase, bssid_db: BssidDatabase){
             }
             Button(
                 modifier = Modifier.fillMaxWidth(),
-                onClick = {
-                    launchSnackbar(message = "Hi i am snackbar", actionLabel = "Hide", duration = SnackbarDuration.Indefinite)}
-            ) {
-                Text(
-                    text = "notif",
-                    fontSize = 15.sp
-                )
-            }
-            Button(
-                modifier = Modifier.fillMaxWidth(),
                 onClick = { exportDataToJson(context=context, db = finger_db) }
             ) {
                 Text(
@@ -236,15 +226,15 @@ fun InputScreen(finger_db: FingerprintDatabase, bssid_db: BssidDatabase){
 
 
 
-            Button(
-                modifier = Modifier.fillMaxWidth(),
-                onClick = { performGlobalScan(context=context, db = bssid_db) }
-            ) {
-                Text(
-                    text = stringResource(R.string.input),
-                    fontSize = 16.sp
-                )
-            }
+//            Button(
+//                modifier = Modifier.fillMaxWidth(),
+//                onClick = { performGlobalScan(context=context, db = bssid_db) }
+//            ) {
+//                Text(
+//                    text = stringResource(R.string.input),
+//                    fontSize = 16.sp
+//                )
+//            }
 
 //            Button(
 //                modifier = Modifier.fillMaxWidth(),
@@ -264,7 +254,6 @@ fun InputScreen(finger_db: FingerprintDatabase, bssid_db: BssidDatabase){
 
 
 
-    @OptIn(DelicateCoroutinesApi::class)
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     fun performDatabaseAction(
         row: String,
