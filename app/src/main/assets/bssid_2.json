@@ -1,0 +1,26 @@
+[
+  {
+    "uid": 1,
+    "BSSID": "48:b4:c3:6e:2d:d0",
+    "name": "bssid1",
+    "SSID": "HotSpot - UI"
+  },
+  {
+    "uid": 2,
+    "BSSID": "f0:5c:19:85:9c:40",
+    "name": "bssid2",
+    "SSID": "HotSpot - UI"
+  },
+  {
+    "uid": 3,
+    "BSSID": "f0:5c:19:85:9c:41",
+    "name": "bssid3",
+    "SSID": "eduroam"
+  },
+  {
+    "uid": 4,
+    "BSSID": "9c:1c:12:d7:78:a0",
+    "name": "bssid4",
+    "SSID": "HotSpot - UI"
+  }
+]

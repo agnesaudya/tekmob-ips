@@ -67,12 +67,13 @@ import com.example.ipsapp.entity.BSSID
 import com.example.ipsapp.entity.Fingerprint
 import com.example.ipsapp.ui.theme.IpsAppTheme
 import com.google.gson.Gson
-import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.io.File
+import java.io.FileOutputStream
 import java.io.FileWriter
+import java.io.IOException
 import kotlin.math.pow
 
 
@@ -226,25 +227,25 @@ fun InputScreen(finger_db: FingerprintDatabase, bssid_db: BssidDatabase){
 
 
 
-//            Button(
-//                modifier = Modifier.fillMaxWidth(),
-//                onClick = { performGlobalScan(context=context, db = bssid_db) }
-//            ) {
-//                Text(
-//                    text = stringResource(R.string.input),
-//                    fontSize = 16.sp
-//                )
-//            }
+            Button(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = { performGlobalScan(context=context, db = bssid_db) }
+            ) {
+                Text(
+                    text = stringResource(R.string.input),
+                    fontSize = 16.sp
+                )
+            }
 
-//            Button(
-//                modifier = Modifier.fillMaxWidth(),
-//                onClick = { DumpBssidDataToJson(context=context, db = bssid_db) }
-//            ) {
-//                Text(
-//                    text = stringResource(R.string.dump),
-//                    fontSize = 16.sp
-//                )
-//            }
+            Button(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = { DumpBssidDataToJson(context=context, db = bssid_db) }
+            ) {
+                Text(
+                    text = stringResource(R.string.dump),
+                    fontSize = 16.sp
+                )
+            }
         }
 
     }
@@ -293,7 +294,7 @@ fun InputScreen(finger_db: FingerprintDatabase, bssid_db: BssidDatabase){
                             println(filteredResult.level)
                             println(convertDbToDbWatt(filteredResult.level))
 //                            println("XXXXXXXXXX")
-
+//f0:5c:19:85:9c:41 f0:5c:19:85:9c:41
                             when (existingBSSID.name) {
                                 "bssid1" -> fingerprint.bssid1_rssi = convertDbToDbWatt(filteredResult.level)
                                 "bssid2" -> fingerprint.bssid2_rssi = convertDbToDbWatt(filteredResult.level)
@@ -422,28 +423,29 @@ fun exportDataToJson(context: Context, db: FingerprintDatabase) {
 }
 
 
-//fun DumpBssidDataToJson(db: BssidDatabase, context: Context) {
-//    GlobalScope.launch(Dispatchers.IO) {
-//        val dao = db.bssidDao()
-//        val data = dao.getAll()
-//
-//        val gson = Gson()
-//        val json = gson.toJson(data)
-//
-//        val filename = "bssid.json"
-//        val downloadsFolder =
-//            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-//
-//        val file = File(downloadsFolder, filename)
-//
-//        try {
-//            FileOutputStream(file).use {
-//                it.write(json.toByteArray())
-//            }
-//        } catch (e: IOException) {
-//            e.printStackTrace()
-//        }
-//    }
+fun DumpBssidDataToJson(db: BssidDatabase, context: Context) {
+    GlobalScope.launch(Dispatchers.IO) {
+        val dao = db.bssidDao()
+        val data = dao.getAll()
+
+        val gson = Gson()
+        val json = gson.toJson(data)
+
+        val filename = "bssid.json"
+        val downloadsFolder =
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+
+        val file = File(downloadsFolder, filename)
+
+        try {
+            FileOutputStream(file).use {
+                it.write(json.toByteArray())
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+    }
+}
 
 
 
