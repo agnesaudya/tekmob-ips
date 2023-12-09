@@ -25,8 +25,15 @@ data class Fingerprint(
     @ColumnInfo(name = "bssid12_rssi") var bssid12_rssi: Double = 0.0,
     @ColumnInfo(name = "bssid13_rssi") var bssid13_rssi: Double = 0.0,
     @ColumnInfo(name = "bssid14_rssi") var bssid14_rssi: Double = 0.0,
+    @ColumnInfo(name = "bssid15_rssi") var bssid15_rssi: Double = 0.0,
+    @ColumnInfo(name = "bssid16_rssi") var bssid16_rssi: Double = 0.0,
+    @ColumnInfo(name = "bssid17_rssi") var bssid17_rssi: Double = 0.0,
+    @ColumnInfo(name = "bssid18_rssi") var bssid18_rssi: Double = 0.0,
+    @ColumnInfo(name = "bssid19_rssi") var bssid19_rssi: Double = 0.0,
+    @ColumnInfo(name = "bssid20_rssi") var bssid20_rssi: Double = 0.0,
+
 
 ) {
     // Primary constructor
-    constructor() : this(0, "R1C1")
+    constructor() : this(0, "RxCx")
 }

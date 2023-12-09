@@ -31,29 +31,29 @@ abstract class BssidDatabase : RoomDatabase() {
                     BssidDatabase::class.java,
                     "bssid"
                 )
-//                    .addCallback(object : Callback() {
-//                        override fun onCreate(db: SupportSQLiteDatabase) {
-//                            super.onCreate(db)
-//                            INSTANCE?.let { database ->
-//                                CoroutineScope(Dispatchers.IO).launch {
-//                                    val bssidDao = database.bssidDao()
-//
-//                                    // Read data from the JSON file
-//                                    val jsonString = context.assets.open("bssid.json")
-//                                        .bufferedReader().use { it.readText() }
-//
-//                                    // Convert JSON to a list of BSSID objects
-//                                    val prepopulatedBSSIDs = Gson().fromJson<List<BSSID>>(
-//                                        jsonString,
-//                                        object : TypeToken<List<BSSID>>() {}.type
-//                                    )
-//
-//
-//                                    bssidDao.insertAll(prepopulatedBSSIDs)
-//                                }
-//                            }
-//                        }
-//                    })
+                    .addCallback(object : Callback() {
+                        override fun onCreate(db: SupportSQLiteDatabase) {
+                            super.onCreate(db)
+                            INSTANCE?.let { database ->
+                                CoroutineScope(Dispatchers.IO).launch {
+                                    val bssidDao = database.bssidDao()
+
+                                    // Read data from the JSON file
+                                    val jsonString = context.assets.open("bssid.json")
+                                        .bufferedReader().use { it.readText() }
+
+                                    // Convert JSON to a list of BSSID objects
+                                    val prepopulatedBSSIDs = Gson().fromJson<List<BSSID>>(
+                                        jsonString,
+                                        object : TypeToken<List<BSSID>>() {}.type
+                                    )
+
+
+                                    bssidDao.insertAll(prepopulatedBSSIDs)
+                                }
+                            }
+                        }
+                    })
                     .build()
                 INSTANCE = instance
                 instance

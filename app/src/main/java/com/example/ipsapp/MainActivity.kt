@@ -59,6 +59,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.room.Room
+import com.example.ilsapp.R
 
 import com.example.ipsapp.database.BssidDatabase
 import com.example.ipsapp.database.FingerprintDatabase
@@ -339,6 +340,13 @@ fun InputScreen(finger_db: FingerprintDatabase, bssid_db: BssidDatabase){
                             "bssid12" -> fingerprint.bssid12_rssi = convertDbToDbWatt(filteredResult.level)
                             "bssid13" -> fingerprint.bssid13_rssi = convertDbToDbWatt(filteredResult.level)
                             "bssid14" -> fingerprint.bssid14_rssi = convertDbToDbWatt(filteredResult.level)
+                            "bssid15" -> fingerprint.bssid15_rssi = convertDbToDbWatt(filteredResult.level)
+                            "bssid16" -> fingerprint.bssid16_rssi = convertDbToDbWatt(filteredResult.level)
+                            "bssid17" -> fingerprint.bssid17_rssi = convertDbToDbWatt(filteredResult.level)
+                            "bssid18" -> fingerprint.bssid18_rssi = convertDbToDbWatt(filteredResult.level)
+                            "bssid19" -> fingerprint.bssid19_rssi = convertDbToDbWatt(filteredResult.level)
+                            "bssid20" -> fingerprint.bssid20_rssi = convertDbToDbWatt(filteredResult.level)
+
 
                             else -> {
                                 print("BSSID Not existing")
