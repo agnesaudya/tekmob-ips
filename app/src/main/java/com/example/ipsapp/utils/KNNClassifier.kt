@@ -37,6 +37,7 @@ class KNNClassifier {
         val kNearestLabels = kNearest.map { labels[it.first] } // it.first is the index of the data point
 //        count the number of each label
         val labelCounts = kNearestLabels.groupingBy { it }.eachCount()
+//         return the label with the most counts
         return labelCounts.maxBy { it.value }!!.key
 
 

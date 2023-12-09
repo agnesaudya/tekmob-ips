@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import com.example.ipsapp.entity.BSSID
 import com.example.ipsapp.entity.Fingerprint
 
 @Dao
@@ -24,4 +25,7 @@ interface FingerprintDao {
 
     @Delete
     fun delete(fingerprint: Fingerprint)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertAll(fingerprints: List<Fingerprint>)
 }

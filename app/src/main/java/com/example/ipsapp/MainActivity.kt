@@ -66,6 +66,7 @@ import com.example.ipsapp.database.FingerprintDatabase
 import com.example.ipsapp.entity.BSSID
 import com.example.ipsapp.entity.Fingerprint
 import com.example.ipsapp.ui.theme.IpsAppTheme
+import com.example.ipsapp.utils.KNNClassifier
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -90,12 +91,12 @@ class MainActivity : ComponentActivity() {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 2)
         }
 
-        val finger_db = Room.databaseBuilder(
-            applicationContext,
-            FingerprintDatabase::class.java, "fingerprint"
-
-        ).build()
-
+//        val finger_db = Room.databaseBuilder(
+//            applicationContext,
+//            FingerprintDatabase::class.java, "fingerprint"
+//
+//        ).build()
+        val finger_db = FingerprintDatabase.getInstance(this.applicationContext)
         val bssid_db = BssidDatabase.getInstance(this.applicationContext)
         setContent {
             IpsAppTheme {
@@ -252,11 +253,122 @@ fun InputScreen(finger_db: FingerprintDatabase, bssid_db: BssidDatabase){
                     fontSize = 16.sp
                 )
             }
+            Button(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = { performKNN(finger_db, bssid_db,context ) }
+            ) {
+                Text(
+                    text = stringResource(R.string.map),
+                    fontSize = 16.sp
+                )
+            }
         }
 
     }
 
 
+}
+
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+fun performKNN(finger_db: FingerprintDatabase, bssid_db: BssidDatabase, context: Context) {
+
+    GlobalScope.launch(Dispatchers.IO) {
+
+        val fingerprintList = finger_db.fingerprintDao().getAll()
+
+        val knnClassifier = KNNClassifier(fingerprintList)
+            try {
+
+                if (ContextCompat.checkSelfPermission(
+                        context,
+                        Manifest.permission.ACCESS_FINE_LOCATION
+                    ) == PackageManager.PERMISSION_GRANTED
+                    ||
+                    ContextCompat.checkSelfPermission(
+                        context,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    ) == PackageManager.PERMISSION_GRANTED
+                    ||
+                    ContextCompat.checkSelfPermission(
+                        context,
+                        Manifest.permission.CHANGE_WIFI_STATE
+                    ) == PackageManager.PERMISSION_GRANTED
+                ) {
+
+
+                    val wifiManager = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
+
+
+                    val scanResults: List<ScanResult> = wifiManager.scanResults
+                    val filteredResults = scanResults.filter { scanResult ->
+                        scanResult.wifiSsid.toString() == "\"eduroam\"" || scanResult.wifiSsid.toString()
+                            .contains("\"HotSpot - UI\"")
+                    }
+
+                    var fingerprint = Fingerprint()
+                    filteredResults.forEach { filteredResult ->
+
+                        val existingBSSID = bssid_db.bssidDao().findByBSSID(filteredResult.BSSID)
+
+                        println(filteredResult.BSSID)
+                        if (existingBSSID != null) {
+                            println(existingBSSID.name)
+                            println(filteredResult.level)
+                            println(convertDbToDbWatt(filteredResult.level))
+
+                            when (existingBSSID.name) {
+                                "bssid1" -> fingerprint.bssid1_rssi = convertDbToDbWatt(filteredResult.level)
+                                "bssid2" -> fingerprint.bssid2_rssi = convertDbToDbWatt(filteredResult.level)
+                                "bssid3" -> fingerprint.bssid3_rssi = convertDbToDbWatt(filteredResult.level)
+                                "bssid4" -> fingerprint.bssid4_rssi = convertDbToDbWatt(filteredResult.level)
+                                "bssid5" -> fingerprint.bssid5_rssi = convertDbToDbWatt(filteredResult.level)
+                                "bssid6" -> fingerprint.bssid6_rssi = convertDbToDbWatt(filteredResult.level)
+                                "bssid7" -> fingerprint.bssid7_rssi = convertDbToDbWatt(filteredResult.level)
+                                "bssid8" -> fingerprint.bssid8_rssi = convertDbToDbWatt(filteredResult.level)
+                                "bssid9" -> fingerprint.bssid9_rssi = convertDbToDbWatt(filteredResult.level)
+                                "bssid10" -> fingerprint.bssid10_rssi = convertDbToDbWatt(filteredResult.level)
+                                "bssid11" -> fingerprint.bssid11_rssi = convertDbToDbWatt(filteredResult.level)
+                                "bssid12" -> fingerprint.bssid12_rssi = convertDbToDbWatt(filteredResult.level)
+                                "bssid13" -> fingerprint.bssid13_rssi = convertDbToDbWatt(filteredResult.level)
+                                "bssid14" -> fingerprint.bssid14_rssi = convertDbToDbWatt(filteredResult.level)
+                                "bssid15" -> fingerprint.bssid15_rssi = convertDbToDbWatt(filteredResult.level)
+                                "bssid16" -> fingerprint.bssid16_rssi = convertDbToDbWatt(filteredResult.level)
+                                "bssid17" -> fingerprint.bssid17_rssi = convertDbToDbWatt(filteredResult.level)
+                                "bssid18" -> fingerprint.bssid18_rssi = convertDbToDbWatt(filteredResult.level)
+                                "bssid19" -> fingerprint.bssid19_rssi = convertDbToDbWatt(filteredResult.level)
+                                "bssid20" -> fingerprint.bssid20_rssi = convertDbToDbWatt(filteredResult.level)
+
+
+                                else -> {
+                                    print("BSSID Not existing")
+                                }
+                            }
+
+
+                        }
+                    }
+
+                    val result = knnClassifier.classify(listOf(fingerprint.bssid1_rssi,fingerprint.bssid2_rssi,
+                        fingerprint.bssid3_rssi,fingerprint.bssid4_rssi,fingerprint.bssid5_rssi,
+                        fingerprint.bssid6_rssi,fingerprint.bssid7_rssi, fingerprint.bssid8_rssi,
+                        fingerprint.bssid9_rssi,fingerprint.bssid10_rssi,
+                        fingerprint.bssid11_rssi,fingerprint.bssid12_rssi, fingerprint.bssid13_rssi,
+                        fingerprint.bssid14_rssi, fingerprint.bssid15_rssi, fingerprint.bssid16_rssi,
+                        fingerprint.bssid17_rssi, fingerprint.bssid18_rssi, fingerprint.bssid19_rssi,
+                        fingerprint.bssid20_rssi),4)
+                    println("XXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXX  "+result)
+                }else{
+
+                }
+
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+
+            }
+
+
+    }
 }
 
 
