@@ -389,6 +389,7 @@ fun performGlobalScan(db: BssidDatabase, context: Context ) {
             ) == PackageManager.PERMISSION_GRANTED
         ) {
 
+
             val scanResults: List<ScanResult> = wifiManager.scanResults
             val filteredResult = scanResults.filter { scanResult ->
                 scanResult.wifiSsid.toString() == "\"eduroam\"" || scanResult.wifiSsid.toString()
