@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace 'com.example.ilsapp'
+    namespace 'com.example.ipsapp'
     compileSdk 33
 
     defaultConfig {
-        applicationId "com.example.ilsapp"
+        applicationId "com.example.ipsapp"
         minSdk 24
         targetSdk 33
         versionCode 1

@@ -59,7 +59,6 @@ import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.room.Room
-import com.example.ilsapp.R
 
 import com.example.ipsapp.database.BssidDatabase
 import com.example.ipsapp.database.FingerprintDatabase
@@ -194,14 +193,20 @@ fun InputScreen(finger_db: FingerprintDatabase, bssid_db: BssidDatabase){
             Button(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = {
-                    performDatabaseAction(row, col, finger_db, bssid_db, context) { isSuccess ->
-                        if (isSuccess) {
-                            // Show Snackbar or perform other actions for success
-                            launchSnackbar(message = "Success adding data", actionLabel = "Hide", duration = SnackbarDuration.Indefinite)
-                        } else {
-                            // Show Snackbar or perform other actions for failure
-                            launchSnackbar(message = "Failed adding data", actionLabel = "Hide", duration = SnackbarDuration.Indefinite)
+                    if (row.isNotBlank() && col.isNotBlank()) {
+                        performDatabaseAction(row, col, finger_db, bssid_db, context) { res ->
+                            launchSnackbar(
+                                message = res,
+                                actionLabel = "Hide",
+                                duration = SnackbarDuration.Indefinite
+                            )
                         }
+                    } else {
+                        launchSnackbar(
+                            message = "Please fill in both row and column",
+                            actionLabel = "Hide",
+                            duration = SnackbarDuration.Short
+                        )
                     }
                 }
             ) {
@@ -212,7 +217,7 @@ fun InputScreen(finger_db: FingerprintDatabase, bssid_db: BssidDatabase){
             }
             Button(
                 modifier = Modifier.fillMaxWidth(),
-                onClick = { exportDataToJson(context=context, db = finger_db) }
+                onClick = { exportDataToJson(db = finger_db) }
             ) {
                 Text(
                     text = stringResource(R.string.download),
@@ -239,7 +244,7 @@ fun InputScreen(finger_db: FingerprintDatabase, bssid_db: BssidDatabase){
 
             Button(
                 modifier = Modifier.fillMaxWidth(),
-                onClick = { DumpBssidDataToJson(context=context, db = bssid_db) }
+                onClick = { dumpBssidDataToJson(db = bssid_db) }
             ) {
                 Text(
                     text = stringResource(R.string.dump),
@@ -262,19 +267,44 @@ fun InputScreen(finger_db: FingerprintDatabase, bssid_db: BssidDatabase){
         finger_db: FingerprintDatabase,
         bssid_db: BssidDatabase,
         context: Context,
-        callback: (Boolean) -> Unit
+        callback: (String) -> Unit
     ) {
 
         GlobalScope.launch(Dispatchers.IO) {
             try {
                 println(row)
                 println(col)
-                val wifiManager = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
+
+
                 if (ContextCompat.checkSelfPermission(
                         context,
                         Manifest.permission.ACCESS_FINE_LOCATION
                     ) == PackageManager.PERMISSION_GRANTED
+                    ||
+                    ContextCompat.checkSelfPermission(
+                        context,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    ) == PackageManager.PERMISSION_GRANTED
+                    ||
+                    ContextCompat.checkSelfPermission(
+                        context,
+                        Manifest.permission.CHANGE_WIFI_STATE
+                    ) == PackageManager.PERMISSION_GRANTED
                 ) {
+
+
+                    val wifiManager = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
+                    val success = wifiManager.startScan()
+
+                    if (!success) {
+
+                        callback.invoke("Gagal scan, hasil masih sama")
+                        return@launch //keluar dari coroutine
+                    }else{
+
+                        callback.invoke("sukses $success")
+                    }
+
                     val scanResults: List<ScanResult> = wifiManager.scanResults
                     val filteredResults = scanResults.filter { scanResult ->
                         scanResult.wifiSsid.toString() == "\"eduroam\"" || scanResult.wifiSsid.toString()
@@ -284,7 +314,6 @@ fun InputScreen(finger_db: FingerprintDatabase, bssid_db: BssidDatabase){
 
                     filteredResults.forEach { filteredResult ->
                         var fingerprint = Fingerprint()
-//                        println("HEI")
 
                         val existingBSSID = bssid_db.bssidDao().findByBSSID(filteredResult.BSSID)
 
@@ -293,7 +322,7 @@ fun InputScreen(finger_db: FingerprintDatabase, bssid_db: BssidDatabase){
                             println(existingBSSID.name)
                             println(filteredResult.level)
                             println(convertDbToDbWatt(filteredResult.level))
-//                            println("XXXXXXXXXX")
+
 //f0:5c:19:85:9c:41 f0:5c:19:85:9c:41
                             when (existingBSSID.name) {
                                 "bssid1" -> fingerprint.bssid1_rssi = convertDbToDbWatt(filteredResult.level)
@@ -317,28 +346,29 @@ fun InputScreen(finger_db: FingerprintDatabase, bssid_db: BssidDatabase){
                         }
                             fingerprint.label = "R${row}C${col}"
 
-
                                 finger_db.fingerprintDao().insert(fingerprint)
-                            callback.invoke(true) // Success
 
-                        }else{
-                            println("GAK nemu bssid HEU")
 
-                            callback.invoke(false)
                         }
                     }
+
+                    callback.invoke("Sukses melakukan scanning")
+                }else{
+                    callback.invoke("Permission gagal")
                 }
-                // If no success, invoke the callback with false
-                callback.invoke(false)
+
+
             } catch (e: Exception) {
                 e.printStackTrace()
-                // If an exception occurs, invoke the callback with false
-                callback.invoke(false)
+
+                callback.invoke("Terdapat Exception")
             }
         }
 
 
     }
+
+
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 fun performGlobalScan(db: BssidDatabase, context: Context ) {
@@ -383,7 +413,7 @@ fun performGlobalScan(db: BssidDatabase, context: Context ) {
             }
         } else {
 
-            // Request ACCESS_FINE_LOCATION permission if not granted
+
 
         }
     }
@@ -395,10 +425,9 @@ fun performGlobalScan(db: BssidDatabase, context: Context ) {
 
 
 
-fun exportDataToJson(context: Context, db: FingerprintDatabase) {
+fun exportDataToJson(db: FingerprintDatabase) {
     GlobalScope.launch(Dispatchers.IO) {
         try {
-
             val fingerprintList = db.fingerprintDao().getAll()
             val gson = Gson()
             val jsonData = gson.toJson(fingerprintList)
@@ -410,20 +439,22 @@ fun exportDataToJson(context: Context, db: FingerprintDatabase) {
 
             val file = File(filePath)
 
+            if (file.exists()) {
+                file.delete()
+            }
+
             FileWriter(file).use { writer ->
                 writer.write(jsonData)
             }
 
             println("Export to JSON successful. File path: ${file.absolutePath}")
         } catch (e: Exception) {
-
             println("Export to JSON failed: ${e.message}")
         }
     }
 }
 
-
-fun DumpBssidDataToJson(db: BssidDatabase, context: Context) {
+fun dumpBssidDataToJson(db: BssidDatabase) {
     GlobalScope.launch(Dispatchers.IO) {
         val dao = db.bssidDao()
         val data = dao.getAll()
@@ -438,11 +469,20 @@ fun DumpBssidDataToJson(db: BssidDatabase, context: Context) {
         val file = File(downloadsFolder, filename)
 
         try {
+            // Check if the file exists
+            if (file.exists()) {
+                // Delete the existing file
+                file.delete()
+            }
+
+            // Create a new file
             FileOutputStream(file).use {
                 it.write(json.toByteArray())
             }
+
+            println("Dump BSSID data to JSON successful. File path: ${file.absolutePath}")
         } catch (e: IOException) {
-            e.printStackTrace()
+            println("Dump BSSID data to JSON failed: ${e.message}")
         }
     }
 }
