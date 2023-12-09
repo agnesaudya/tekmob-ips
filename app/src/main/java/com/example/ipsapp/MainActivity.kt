@@ -59,7 +59,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.room.Room
-import com.example.ilsapp.R
+import com.example.ipsapp.R
 
 import com.example.ipsapp.database.BssidDatabase
 import com.example.ipsapp.database.FingerprintDatabase
@@ -312,9 +312,9 @@ fun InputScreen(finger_db: FingerprintDatabase, bssid_db: BssidDatabase){
                             .contains("\"HotSpot - UI\"")
                     }
 
-
+                    var fingerprint = Fingerprint()
                     filteredResults.forEach { filteredResult ->
-                        var fingerprint = Fingerprint()
+
 
                         val existingBSSID = bssid_db.bssidDao().findByBSSID(filteredResult.BSSID)
 
@@ -354,11 +354,12 @@ fun InputScreen(finger_db: FingerprintDatabase, bssid_db: BssidDatabase){
                         }
                             fingerprint.label = "R${row}C${col}"
 
-                                finger_db.fingerprintDao().insert(fingerprint)
+
 
 
                         }
                     }
+                    finger_db.fingerprintDao().insert(fingerprint)
 
                     callback.invoke("Sukses melakukan scanning")
                 }else{
@@ -368,7 +369,6 @@ fun InputScreen(finger_db: FingerprintDatabase, bssid_db: BssidDatabase){
 
             } catch (e: Exception) {
                 e.printStackTrace()
-
                 callback.invoke("Terdapat Exception")
             }
         }
