@@ -19,11 +19,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.IpsApp"
         tools:targetApi="31">
-<!--        <activity-->
-<!--            android:name=".KnnActivity"-->
-<!--            android:exported="false"-->
-<!--            android:label="@string/title_activity_knn"-->
-<!--            android:theme="@style/Theme.IpsApp" />-->
+        <activity
+            android:name=".LayoutDaerah"
+            android:exported="false"
+            android:label="@string/title_layout"
+            android:theme="@style/Theme.IpsApp" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

@@ -40,10 +40,9 @@ abstract class FingerprintDatabase : RoomDatabase() {
                                     val fingerprintdDao = database.fingerprintDao()
 
                                     // Read data from the JSON file
-                                    val jsonString = context.assets.open("bssid.json")
+                                    val jsonString = context.assets.open("fingerprint_data.json")
                                         .bufferedReader().use { it.readText() }
 
-                                    // Convert JSON to a list of BSSID objects
                                     val prepopulatedFingerprints =
                                         Gson().fromJson<List<Fingerprint>>(
                                             jsonString,

@@ -1,7 +1,8 @@
 package com.example.ipsapp
-
+import com.example.ipsapp.LayoutDaerah
 import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.wifi.ScanResult
 import android.net.wifi.WifiManager
@@ -17,32 +18,25 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.shapes
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -58,8 +52,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.room.Room
-import com.example.ipsapp.R
 
 import com.example.ipsapp.database.BssidDatabase
 import com.example.ipsapp.database.FingerprintDatabase
@@ -200,7 +192,7 @@ fun InputScreen(finger_db: FingerprintDatabase, bssid_db: BssidDatabase){
                             launchSnackbar(
                                 message = res,
                                 actionLabel = "Hide",
-                                duration = SnackbarDuration.Indefinite
+                                duration = SnackbarDuration.Short
                             )
                         }
                     } else {
@@ -253,10 +245,14 @@ fun InputScreen(finger_db: FingerprintDatabase, bssid_db: BssidDatabase){
                     fontSize = 16.sp
                 )
             }
-            Button(
-                modifier = Modifier.fillMaxWidth(),
-                onClick = { performKNN(finger_db, bssid_db,context ) }
-            ) {
+//            Button(
+//                modifier = Modifier.fillMaxWidth(),
+//                onClick = { performKNN(finger_db, bssid_db,context ) }
+//            )
+            Button(  modifier = Modifier.fillMaxWidth(),onClick = {
+                context.startActivity(Intent(context, LayoutDaerah::class.java))
+            })
+            {
                 Text(
                     text = stringResource(R.string.map),
                     fontSize = 16.sp
@@ -267,108 +263,6 @@ fun InputScreen(finger_db: FingerprintDatabase, bssid_db: BssidDatabase){
     }
 
 
-}
-
-@RequiresApi(Build.VERSION_CODES.TIRAMISU)
-fun performKNN(finger_db: FingerprintDatabase, bssid_db: BssidDatabase, context: Context) {
-
-    GlobalScope.launch(Dispatchers.IO) {
-
-        val fingerprintList = finger_db.fingerprintDao().getAll()
-
-        val knnClassifier = KNNClassifier(fingerprintList)
-            try {
-
-                if (ContextCompat.checkSelfPermission(
-                        context,
-                        Manifest.permission.ACCESS_FINE_LOCATION
-                    ) == PackageManager.PERMISSION_GRANTED
-                    ||
-                    ContextCompat.checkSelfPermission(
-                        context,
-                        Manifest.permission.ACCESS_COARSE_LOCATION
-                    ) == PackageManager.PERMISSION_GRANTED
-                    ||
-                    ContextCompat.checkSelfPermission(
-                        context,
-                        Manifest.permission.CHANGE_WIFI_STATE
-                    ) == PackageManager.PERMISSION_GRANTED
-                ) {
-
-
-                    val wifiManager = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
-
-
-                    val scanResults: List<ScanResult> = wifiManager.scanResults
-                    val filteredResults = scanResults.filter { scanResult ->
-                        scanResult.wifiSsid.toString() == "\"eduroam\"" || scanResult.wifiSsid.toString()
-                            .contains("\"HotSpot - UI\"")
-                    }
-
-                    var fingerprint = Fingerprint()
-                    filteredResults.forEach { filteredResult ->
-
-                        val existingBSSID = bssid_db.bssidDao().findByBSSID(filteredResult.BSSID)
-
-                        println(filteredResult.BSSID)
-                        if (existingBSSID != null) {
-                            println(existingBSSID.name)
-                            println(filteredResult.level)
-                            println(convertDbToDbWatt(filteredResult.level))
-
-                            when (existingBSSID.name) {
-                                "bssid1" -> fingerprint.bssid1_rssi = convertDbToDbWatt(filteredResult.level)
-                                "bssid2" -> fingerprint.bssid2_rssi = convertDbToDbWatt(filteredResult.level)
-                                "bssid3" -> fingerprint.bssid3_rssi = convertDbToDbWatt(filteredResult.level)
-                                "bssid4" -> fingerprint.bssid4_rssi = convertDbToDbWatt(filteredResult.level)
-                                "bssid5" -> fingerprint.bssid5_rssi = convertDbToDbWatt(filteredResult.level)
-                                "bssid6" -> fingerprint.bssid6_rssi = convertDbToDbWatt(filteredResult.level)
-                                "bssid7" -> fingerprint.bssid7_rssi = convertDbToDbWatt(filteredResult.level)
-                                "bssid8" -> fingerprint.bssid8_rssi = convertDbToDbWatt(filteredResult.level)
-                                "bssid9" -> fingerprint.bssid9_rssi = convertDbToDbWatt(filteredResult.level)
-                                "bssid10" -> fingerprint.bssid10_rssi = convertDbToDbWatt(filteredResult.level)
-                                "bssid11" -> fingerprint.bssid11_rssi = convertDbToDbWatt(filteredResult.level)
-                                "bssid12" -> fingerprint.bssid12_rssi = convertDbToDbWatt(filteredResult.level)
-                                "bssid13" -> fingerprint.bssid13_rssi = convertDbToDbWatt(filteredResult.level)
-                                "bssid14" -> fingerprint.bssid14_rssi = convertDbToDbWatt(filteredResult.level)
-                                "bssid15" -> fingerprint.bssid15_rssi = convertDbToDbWatt(filteredResult.level)
-                                "bssid16" -> fingerprint.bssid16_rssi = convertDbToDbWatt(filteredResult.level)
-                                "bssid17" -> fingerprint.bssid17_rssi = convertDbToDbWatt(filteredResult.level)
-                                "bssid18" -> fingerprint.bssid18_rssi = convertDbToDbWatt(filteredResult.level)
-                                "bssid19" -> fingerprint.bssid19_rssi = convertDbToDbWatt(filteredResult.level)
-                                "bssid20" -> fingerprint.bssid20_rssi = convertDbToDbWatt(filteredResult.level)
-
-
-                                else -> {
-                                    print("BSSID Not existing")
-                                }
-                            }
-
-
-                        }
-                    }
-
-                    val result = knnClassifier.classify(listOf(fingerprint.bssid1_rssi,fingerprint.bssid2_rssi,
-                        fingerprint.bssid3_rssi,fingerprint.bssid4_rssi,fingerprint.bssid5_rssi,
-                        fingerprint.bssid6_rssi,fingerprint.bssid7_rssi, fingerprint.bssid8_rssi,
-                        fingerprint.bssid9_rssi,fingerprint.bssid10_rssi,
-                        fingerprint.bssid11_rssi,fingerprint.bssid12_rssi, fingerprint.bssid13_rssi,
-                        fingerprint.bssid14_rssi, fingerprint.bssid15_rssi, fingerprint.bssid16_rssi,
-                        fingerprint.bssid17_rssi, fingerprint.bssid18_rssi, fingerprint.bssid19_rssi,
-                        fingerprint.bssid20_rssi),4)
-                    println("XXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXX  "+result)
-                }else{
-
-                }
-
-
-            } catch (e: Exception) {
-                e.printStackTrace()
-
-            }
-
-
-    }
 }
 
 
@@ -387,7 +281,8 @@ fun performKNN(finger_db: FingerprintDatabase, bssid_db: BssidDatabase, context:
             try {
                 println(row)
                 println(col)
-
+                val f = finger_db.fingerprintDao().findByLabel("R${row}C${col}")
+                val b = bssid_db.bssidDao().findByBSSID("f0:5c:19:85:9c:41")
 
                 if (ContextCompat.checkSelfPermission(
                         context,
@@ -492,8 +387,10 @@ fun performKNN(finger_db: FingerprintDatabase, bssid_db: BssidDatabase, context:
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 fun performGlobalScan(db: BssidDatabase, context: Context ) {
-
     GlobalScope.launch(Dispatchers.IO) {
+
+
+
         val wifiManager = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
         if (ContextCompat.checkSelfPermission(
                 context,

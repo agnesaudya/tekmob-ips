@@ -10,6 +10,6 @@
     <string name="input">Scan Global BSSID</string>
     <string name="dump">Dump BSSID to Json</string>
     <string name="map">map</string>
-    <string name="title_activity_knn">KnnActivity</string>
+    <string name="title_layout">LayoutDaerah</string>
 
 </resources>
