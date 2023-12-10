@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">IpsApp</string>
+    <string name="app_name">IndoorTrac</string>
     <string name="title">Collecting Data</string>
     <string name="row">Row</string>
     <string name="col">Col</string>
