@@ -11,6 +11,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -33,6 +34,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.example.ipsapp.database.BssidDatabase
@@ -222,8 +224,8 @@ fun changeCirclePosition(label: String) {
     midpointMap.put("R4C4", Pair(310, 480))
 //    if label not in midpointMap
     if (!midpointMap.containsKey(label)) {
-        Column(modifier = Modifier.padding(horizontal = 0.dp, vertical = 100.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(text ="You are not in the class")
+        Column(modifier = Modifier.padding(horizontal = 0.dp, vertical = 400.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(text ="You are not in the class", color = Color.Red)
 
         }
 
