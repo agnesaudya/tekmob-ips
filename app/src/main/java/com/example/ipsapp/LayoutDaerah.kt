@@ -223,8 +223,8 @@ fun changeCirclePosition(label: String) {
     midpointMap.put("R4C3", Pair(230, 480))
     midpointMap.put("R4C4", Pair(310, 480))
 //    if label not in midpointMap
-    if (!midpointMap.containsKey(label)) {
-        Column(modifier = Modifier.padding(horizontal = 0.dp, vertical = 142.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+    if (!midpointMap.containsKey(label) or label.equals("RxCx")) {
+        Column(modifier = Modifier.padding(horizontal = 0.dp, vertical = 159.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Text(text ="You are not in the class", color = Color.Red)
 
         }
@@ -274,7 +274,6 @@ fun performKNN(
     onMidpointChange: (String) -> Unit
 ) {
 
-    println("XXX PERFORMING KNN XXX")
     GlobalScope.launch(Dispatchers.IO) {
 
         val fingerprintList = finger_db.fingerprintDao().getAll()
@@ -314,9 +313,6 @@ fun performKNN(
 
 
                     if (existingBSSID != null) {
-                        println(existingBSSID.name)
-                        println(filteredResult.level)
-                        println(convertDbTomWatt(filteredResult.level))
 
                         when (existingBSSID.name) {
                             "bssid1" -> fingerprint.bssid1_rssi = convertDbTomWatt(filteredResult.level)
@@ -358,9 +354,7 @@ fun performKNN(
                     fingerprint.bssid14_rssi, fingerprint.bssid15_rssi, fingerprint.bssid16_rssi,
                     fingerprint.bssid17_rssi, fingerprint.bssid18_rssi, fingerprint.bssid19_rssi,
                     fingerprint.bssid20_rssi),4)
-                println("fp: "+fingerprint)
-                println(filteredResults)
-                println("res: "+result)
+
                 launch(Dispatchers.Main) {
                     onMidpointChange(result)
                 }
