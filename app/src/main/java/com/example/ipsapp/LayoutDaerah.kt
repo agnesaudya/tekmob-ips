@@ -224,7 +224,7 @@ fun changeCirclePosition(label: String) {
     midpointMap.put("R4C4", Pair(310, 480))
 //    if label not in midpointMap
     if (!midpointMap.containsKey(label)) {
-        Column(modifier = Modifier.padding(horizontal = 0.dp, vertical = 400.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(modifier = Modifier.padding(horizontal = 0.dp, vertical = 142.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Text(text ="You are not in the class", color = Color.Red)
 
         }
@@ -312,33 +312,33 @@ fun performKNN(
 
                     val existingBSSID = bssid_db.bssidDao().findByBSSID(filteredResult.BSSID)
 
-                    println(filteredResult.BSSID)
+
                     if (existingBSSID != null) {
                         println(existingBSSID.name)
                         println(filteredResult.level)
-                        println(convertDbToDbWatt(filteredResult.level))
+                        println(convertDbTomWatt(filteredResult.level))
 
                         when (existingBSSID.name) {
-                            "bssid1" -> fingerprint.bssid1_rssi = convertDbToDbWatt(filteredResult.level)
-                            "bssid2" -> fingerprint.bssid2_rssi = convertDbToDbWatt(filteredResult.level)
-                            "bssid3" -> fingerprint.bssid3_rssi = convertDbToDbWatt(filteredResult.level)
-                            "bssid4" -> fingerprint.bssid4_rssi = convertDbToDbWatt(filteredResult.level)
-                            "bssid5" -> fingerprint.bssid5_rssi = convertDbToDbWatt(filteredResult.level)
-                            "bssid6" -> fingerprint.bssid6_rssi = convertDbToDbWatt(filteredResult.level)
-                            "bssid7" -> fingerprint.bssid7_rssi = convertDbToDbWatt(filteredResult.level)
-                            "bssid8" -> fingerprint.bssid8_rssi = convertDbToDbWatt(filteredResult.level)
-                            "bssid9" -> fingerprint.bssid9_rssi = convertDbToDbWatt(filteredResult.level)
-                            "bssid10" -> fingerprint.bssid10_rssi = convertDbToDbWatt(filteredResult.level)
-                            "bssid11" -> fingerprint.bssid11_rssi = convertDbToDbWatt(filteredResult.level)
-                            "bssid12" -> fingerprint.bssid12_rssi = convertDbToDbWatt(filteredResult.level)
-                            "bssid13" -> fingerprint.bssid13_rssi = convertDbToDbWatt(filteredResult.level)
-                            "bssid14" -> fingerprint.bssid14_rssi = convertDbToDbWatt(filteredResult.level)
-                            "bssid15" -> fingerprint.bssid15_rssi = convertDbToDbWatt(filteredResult.level)
-                            "bssid16" -> fingerprint.bssid16_rssi = convertDbToDbWatt(filteredResult.level)
-                            "bssid17" -> fingerprint.bssid17_rssi = convertDbToDbWatt(filteredResult.level)
-                            "bssid18" -> fingerprint.bssid18_rssi = convertDbToDbWatt(filteredResult.level)
-                            "bssid19" -> fingerprint.bssid19_rssi = convertDbToDbWatt(filteredResult.level)
-                            "bssid20" -> fingerprint.bssid20_rssi = convertDbToDbWatt(filteredResult.level)
+                            "bssid1" -> fingerprint.bssid1_rssi = convertDbTomWatt(filteredResult.level)
+                            "bssid2" -> fingerprint.bssid2_rssi = convertDbTomWatt(filteredResult.level)
+                            "bssid3" -> fingerprint.bssid3_rssi = convertDbTomWatt(filteredResult.level)
+                            "bssid4" -> fingerprint.bssid4_rssi = convertDbTomWatt(filteredResult.level)
+                            "bssid5" -> fingerprint.bssid5_rssi = convertDbTomWatt(filteredResult.level)
+                            "bssid6" -> fingerprint.bssid6_rssi = convertDbTomWatt(filteredResult.level)
+                            "bssid7" -> fingerprint.bssid7_rssi = convertDbTomWatt(filteredResult.level)
+                            "bssid8" -> fingerprint.bssid8_rssi = convertDbTomWatt(filteredResult.level)
+                            "bssid9" -> fingerprint.bssid9_rssi = convertDbTomWatt(filteredResult.level)
+                            "bssid10" -> fingerprint.bssid10_rssi = convertDbTomWatt(filteredResult.level)
+                            "bssid11" -> fingerprint.bssid11_rssi = convertDbTomWatt(filteredResult.level)
+                            "bssid12" -> fingerprint.bssid12_rssi = convertDbTomWatt(filteredResult.level)
+                            "bssid13" -> fingerprint.bssid13_rssi = convertDbTomWatt(filteredResult.level)
+                            "bssid14" -> fingerprint.bssid14_rssi = convertDbTomWatt(filteredResult.level)
+                            "bssid15" -> fingerprint.bssid15_rssi = convertDbTomWatt(filteredResult.level)
+                            "bssid16" -> fingerprint.bssid16_rssi = convertDbTomWatt(filteredResult.level)
+                            "bssid17" -> fingerprint.bssid17_rssi = convertDbTomWatt(filteredResult.level)
+                            "bssid18" -> fingerprint.bssid18_rssi = convertDbTomWatt(filteredResult.level)
+                            "bssid19" -> fingerprint.bssid19_rssi = convertDbTomWatt(filteredResult.level)
+                            "bssid20" -> fingerprint.bssid20_rssi = convertDbTomWatt(filteredResult.level)
 
 
                             else -> {
@@ -358,7 +358,8 @@ fun performKNN(
                     fingerprint.bssid14_rssi, fingerprint.bssid15_rssi, fingerprint.bssid16_rssi,
                     fingerprint.bssid17_rssi, fingerprint.bssid18_rssi, fingerprint.bssid19_rssi,
                     fingerprint.bssid20_rssi),4)
-
+                println("fp: "+fingerprint)
+                println(filteredResults)
                 println("res: "+result)
                 launch(Dispatchers.Main) {
                     onMidpointChange(result)
