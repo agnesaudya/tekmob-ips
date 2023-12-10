@@ -64,6 +64,11 @@ class LayoutDaerah : ComponentActivity() {
                 ) {
                     LayoutKelas()
 
+                    Column(modifier = Modifier.padding(horizontal = 0.dp, vertical = 0.dp), verticalArrangement = Arrangement.Top,
+                        horizontalAlignment = Alignment.CenterHorizontally) {
+                        Image(modifier = Modifier.size(200.dp), painter = painterResource(id = R.drawable.indoortrac), contentDescription = "IndoorTrac")
+                    }
+
                     Column(modifier = Modifier.padding(horizontal = 0.dp, vertical = 100.dp), verticalArrangement = Arrangement.Bottom,
                         horizontalAlignment = Alignment.CenterHorizontally) {
                         refreshButton(finger_db, bssid_db, context = LocalContext.current, midpointValue = midpointValue, onMidpointChange = {midpointValue = it})
