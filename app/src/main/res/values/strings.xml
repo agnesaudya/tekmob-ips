@@ -1,10 +1,15 @@
 <resources>
-    <string name="app_name">IlsApp</string>
+    <string name="app_name">IndoorTrac</string>
     <string name="title">Collecting Data</string>
     <string name="row">Row</string>
     <string name="col">Col</string>
     <string name="label">Label</string>
-    <string name="submit">Submit\n</string>
+    <string name="submit">Submit</string>
     <string name="rssi">RSSI</string>
     <string name="download">Download</string>
+    <string name="input">Scan Global BSSID</string>
+    <string name="dump">Dump BSSID to Json</string>
+    <string name="map">map</string>
+    <string name="title_layout">LayoutDaerah</string>
+
 </resources>
